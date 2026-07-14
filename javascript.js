@@ -1,17 +1,65 @@
 const numberbuttons = document.querySelectorAll(".number");
 const operbuttons = document.querySelectorAll(".operator");
 const screen = document.querySelector("#screen");
+const delbuttons = document.querySelectorAll(".deletion");
+
 let num1="0";
-let num2="0";
+let num2="";
 let currentop;
+let equalled = false;
+
+delbuttons.forEach((button) => {
+    button.addEventListener("click", () => {
+        content = button.textContent;
+        if (content === "AC"){
+            num1="0";
+            num2="";
+            currentop="";
+            screen.textContent="";
+        }
+        else {
+            let lastchar = screen.textContent[screen.textContent.length - 1]; 
+            if (screen.textContent.includes("+") || (screen.textContent.includes("-") || (screen.textContent.includes("x") || (screen.textContent.includes("÷"))))){
+                if (lastchar.charCodeAt(0)>=48 && lastchar.charCodeAt(0) <= 57){
+                    num2 = num2.slice(0,-1);
+                    if (num2.length === 0){
+                        num2 = "0";
+                    }
+                }
+                else{
+                    currentop = "";
+                    num2="";
+                }
+            }
+            else{
+                num2 = "";
+                num1 = num1.slice(0,-1);
+                if (num1.length === 0){
+                    num1 = "0";
+                }
+            }
+            screen.textContent = screen.textContent.slice(0,-1);
+            
+        }
+    });
+});
 
 numberbuttons.forEach((button) => {
     button.addEventListener("click", () => {
         num = button.textContent;
-        screen.textContent = screen.textContent + num;
-        if (screen.textContent.includes("+") || (screen.textContent.includes("-") || (screen.textContent.includes("x") || (screen.textContent.includes("÷"))))){
-            num2 = num2 + num;
+        if (equalled){
+            screen.textContent = num;
+            num1 = num;
+            num2 = "";
+            currentop = "";
+            equalled = false;
         }
+        else{
+            screen.textContent = screen.textContent + num;
+            if (screen.textContent.includes("+") || (screen.textContent.includes("-") || (screen.textContent.includes("x") || (screen.textContent.includes("÷"))))){
+                num2 = num2 + num;
+            }
+        }        
     });
 });
 
@@ -19,30 +67,48 @@ operbuttons.forEach((button) => {
     button.addEventListener("click", () => {
         operation = button.textContent;
         if (operation !== '='){
-            if (screen.textContent[screen.textContent.length - 1] !== '+' && screen.textContent[screen.textContent.length - 1] !== '-' && screen.textContent[screen.textContent.length - 1] !== 'x' && screen.textContent[screen.textContent.length - 1] !== '÷' && screen.textContent.length > 0) {
+            if (equalled){
+                num1 = screen.textContent;
+                num2 = "";
+                currentop = operation;
+                screen.textContent = num1 + operation;
+                equalled = false;
+            }
+            else if (screen.textContent[screen.textContent.length - 1] !== '+' && screen.textContent[screen.textContent.length - 1] !== '-' && screen.textContent[screen.textContent.length - 1] !== 'x' && screen.textContent[screen.textContent.length - 1] !== '÷' && screen.textContent.length > 0 && num2.length===0) {
                 num1 = screen.textContent;
                 screen.textContent = screen.textContent + operation;
                 currentop = operation;
+                num2 = "";
+            }
+            else{
+                num1 = formula(); 
+                num2 = "";
+                console.log("hello");
+                screen.textContent = num1 + operation;
+                currentop = operation;
             }
         }
-        else if (operation === '=' && (screen.textContent.includes("+") || (screen.textContent.includes("-") || (screen.textContent.includes("x") || (screen.textContent.includes("÷")))))){
-            let answer;
-            switch(currentop){
-                case '+': answer = Number(num1) + Number(num2);
-                break;
-
-                case '-': answer = Number(num1) - Number(num2);
-                break;
-
-                case 'x': answer = Number(num1) * Number(num2);
-                break;
-
-                case '÷': answer = Number(num1) / Number(num2);
-                break;
-            }
-            screen.textContent = answer;
+        else if (operation === '=' && num2.length>0 && (screen.textContent.includes("+") || (screen.textContent.includes("-") || (screen.textContent.includes("x") || (screen.textContent.includes("÷")))))){
+            screen.textContent = formula();
+            equalled = true;
         }
         
     });
 });
 
+function formula(){
+    let answer;
+    switch(currentop){
+        case '+': answer = Number(num1) + Number(num2);
+        break;
+        case '-': answer = Number(num1) - Number(num2);
+        break;
+
+        case 'x': answer = Number(num1) * Number(num2);
+        break;
+
+        case '÷': answer = Number(num1) / Number(num2);
+        break;
+    }
+    return answer;
+}
